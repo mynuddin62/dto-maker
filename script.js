@@ -7,6 +7,7 @@ function convertToTypeScript() {
 
     const lines = javaDTO.split("\n");
     let tsDTO = "";
+    const customTypes = new Set(); // Store custom types to declare later
 
     lines.forEach(line => {
         line = line.trim();
@@ -19,6 +20,8 @@ function convertToTypeScript() {
                 .split(/\s+/);
 
             let tsType;
+
+            // Handle common primitive types and detect custom class types
             switch (javaType) {
                 case "String":
                     tsType = "string";
@@ -37,7 +40,16 @@ function convertToTypeScript() {
                     tsType = "Date";
                     break;
                 default:
-                    tsType = "any";
+                    // Check for List or custom class type
+                    if (javaType.startsWith("List<")) {
+                        let innerType = javaType.match(/List<(.+)>/)[1];
+                        innerType = removeDtoSuffix(innerType);
+                        tsType = `${innerType}[]`; // Use [] for array type
+                        customTypes.add(innerType); // Register custom type for later
+                    } else {
+                        tsType = removeDtoSuffix(javaType); // Remove Dto suffix if present
+                        customTypes.add(tsType); // Register custom type for later
+                    }
             }
 
             fieldName = toCamelCase(fieldName);
@@ -45,9 +57,14 @@ function convertToTypeScript() {
         }
     });
 
+
     // Set the output text area and copy to clipboard
     document.getElementById("tsDTO").value = tsDTO;
     copyToClipboard(tsDTO);
+}
+
+function removeDtoSuffix(type) {
+    return type.endsWith("Dto") ? type.slice(0, -3) : type;
 }
 
 function copyToClipboard(text) {
@@ -55,8 +72,6 @@ function copyToClipboard(text) {
         const tooltip = document.getElementById("tooltipText");
         tooltip.style.visibility = "visible";
         tooltip.style.opacity = 1;
-
-        // Hide tooltip after 2 seconds
         setTimeout(() => {
             tooltip.style.visibility = "hidden";
             tooltip.style.opacity = 0;
