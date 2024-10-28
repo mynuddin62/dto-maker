@@ -11,7 +11,6 @@ function convertToTypeScript() {
     lines.forEach(line => {
         line = line.trim();
 
-        // Extract field name and type if the line starts with 'private'
         if (line.startsWith("private")) {
             let [javaType, fieldName] = line
                 .replace("private", "")
@@ -19,7 +18,6 @@ function convertToTypeScript() {
                 .trim()
                 .split(/\s+/);
 
-            // Convert Java type to TypeScript type
             let tsType;
             switch (javaType) {
                 case "String":
@@ -42,17 +40,30 @@ function convertToTypeScript() {
                     tsType = "any";
             }
 
-            // Convert field name to camelCase and append '?'
             fieldName = toCamelCase(fieldName);
             tsDTO += `  ${fieldName}?: ${tsType};\n`;
         }
     });
 
-    // Display the TypeScript DTO
+    // Set the output text area and copy to clipboard
     document.getElementById("tsDTO").value = tsDTO;
+    copyToClipboard(tsDTO);
 }
 
-// Helper function to convert field name to camelCase
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        const tooltip = document.getElementById("tooltipText");
+        tooltip.style.visibility = "visible";
+        tooltip.style.opacity = 1;
+
+        // Hide tooltip after 2 seconds
+        setTimeout(() => {
+            tooltip.style.visibility = "hidden";
+            tooltip.style.opacity = 0;
+        }, 2000);
+    });
+}
+
 function toCamelCase(fieldName) {
     return fieldName.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
 }

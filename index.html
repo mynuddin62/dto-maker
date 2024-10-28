@@ -10,7 +10,11 @@
 <div class="container">
     <h1>Java DTO</h1>
     <textarea id="javaDTO" placeholder="Enter Java DTO fields here..."></textarea>
-    <button onclick="convertToTypeScript()">Convert</button>
+    <!-- Button to trigger the conversion function with tooltip -->
+    <div class="tooltip">
+        <button onclick="convertToTypeScript()">Convert</button>
+        <span class="tooltip-text" id="tooltipText">Copied to clipboard!</span>
+    </div>
     <h2>TypeScript Object</h2>
     <textarea id="tsDTO" readonly></textarea>
 </div>
