@@ -12,12 +12,26 @@ function convertToTypeScript() {
     lines.forEach(line => {
         line = line.trim();
 
-        if (line.startsWith("private")) {
-            let [javaType, fieldName] = line
-                .replace("private", "")
-                .replace(";", "")
-                .trim()
-                .split(/\s+/);
+        // Process fields or interface methods
+        if (line.startsWith("private") || line.includes(" get")) {
+            let javaType, fieldName;
+
+            // Check if it's a field or a method
+            if (line.startsWith("private")) {
+                [javaType, fieldName] = line
+                    .replace("private", "")
+                    .replace(";", "")
+                    .trim()
+                    .split(/\s+/);
+            } else if (line.includes(" get")) {
+                const match = line.match(/(\w+)\s+get(\w+)\(\)/);
+                if (match) {
+                    javaType = match[1]; // Return type
+                    fieldName = match[2]; // Method name without 'get'
+                }
+            }
+
+            if (!javaType || !fieldName) return; // Skip if invalid
 
             let tsType;
 
@@ -57,7 +71,6 @@ function convertToTypeScript() {
         }
     });
 
-
     // Set the output text area and copy to clipboard
     document.getElementById("tsDTO").value = tsDTO;
     copyToClipboard(tsDTO);
@@ -80,5 +93,6 @@ function copyToClipboard(text) {
 }
 
 function toCamelCase(fieldName) {
-    return fieldName.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
+    // Handle get method names by converting PascalCase to camelCase
+    return fieldName.charAt(0).toLowerCase() + fieldName.slice(1);
 }
